@@ -1,2 +1,14 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
+<!-- https://www.thisdot.co/blog/declarative-canvas-with-svelte -->
+<script lang="ts">
+    import Canvas from "$lib/Canvas.svelte";
+    import { onMount } from "svelte";
+    
+
+    console.log("App: Initialized");
+    onMount (() => {
+        console.log("App: mounted");
+    })
+</script>
+<main>
+    <Canvas />
+</main>
