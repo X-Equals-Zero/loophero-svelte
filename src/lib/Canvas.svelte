@@ -1,24 +1,47 @@
 <script lang="ts">
-    import { onMount } from "svelte";
-    let canvasElement: HTMLCanvasElement;
+	import type { DrawFn } from "src/types";
+    import { onDestroy, onMount, setContext } from "svelte";
     console.log("Canvas: initialized");
+    let canvasElement: HTMLCanvasElement;
+    let fnsToDraw = [] as DrawFn[];
+    let frameId: number;
+    const clearFrames: boolean = false;
+    setContext("canvas", {
+        addDrawFn: (fn: DrawFn) => {
+            fnsToDraw.push(fn);
+        },
+        removeDrawFn: (fn: DrawFn) => {
+            let index = fnsToDraw.indexOf(fn);
+            if (index > -1) {
+                fnsToDraw.splice(index, 1);
+
+            }
+        },
+    });
     onMount(() => {
         console.log("Canvas: mounted");
         // get canvas context
         let ctx = canvasElement.getContext("2d");
-        drawLine(ctx, [10, 20], [150, 100]);
-        drawLine(ctx, [10, 40], [150, 120]);
+        canvasElement.width = screen.width - 25;
+        canvasElement.height = screen.height - 91;
+        
+        frameId = requestAnimationFrame(() => ctx && draw(ctx))
+    });
+    onDestroy(() => {
+        if (frameId) {
+            cancelAnimationFrame(frameId);
+        }
     });
 
-    type Point = [number, number];
-    const drawLine = (ctx: CanvasRenderingContext2D | null, start: Point, end: Point) => {
-        if(ctx){
-            // draw first line
-            ctx.beginPath();
-            ctx.moveTo(...start); // line starts here
-            ctx.lineTo(...end); // line ends here
-            ctx.stroke(); // draws it
+    const draw = (ctx: CanvasRenderingContext2D) => {
+        if (clearFrames) {
+            ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
         }
+        fnsToDraw.forEach(fn => fn(ctx));
+        frameId = requestAnimationFrame(() => draw(ctx));
+
     }
+
 </script>
-<canvas bind:this={canvasElement} />
+<canvas on:mousemove on:mouseleave bind:this={canvasElement} />
+<slot />
