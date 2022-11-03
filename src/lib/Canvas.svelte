@@ -1,11 +1,12 @@
 <script lang="ts">
 	import type { DrawFn } from "src/types";
-    import { onDestroy, onMount, setContext } from "svelte";
+    import { getContext, onDestroy, onMount, setContext } from "svelte";
     console.log("Canvas: initialized");
     let canvasElement: HTMLCanvasElement;
     let fnsToDraw = [] as DrawFn[];
     let frameId: number;
     const clearFrames: boolean = false;
+    
     setContext("canvas", {
         addDrawFn: (fn: DrawFn) => {
             fnsToDraw.push(fn);
@@ -17,13 +18,16 @@
 
             }
         },
+
+
     });
+
     onMount(() => {
         console.log("Canvas: mounted");
         // get canvas context
         let ctx = canvasElement.getContext("2d");
-        canvasElement.width = screen.width - 25;
-        canvasElement.height = screen.height - 91;
+        canvasElement.width = document.documentElement.clientWidth;
+        canvasElement.height = document.documentElement.clientHeight;
         
         frameId = requestAnimationFrame(() => ctx && draw(ctx))
     });
