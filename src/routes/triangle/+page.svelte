@@ -15,9 +15,18 @@
 
     
 </script>
-<main>
+<main id="main">
     <Canvas>
         <Triangle />
     </Canvas>
 </main>
 
+<style>
+    #main {
+        position: absolute;
+        top: 0;
+        left: 0;
+
+
+    }
+</style>

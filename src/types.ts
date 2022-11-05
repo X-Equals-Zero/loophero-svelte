@@ -12,5 +12,6 @@ export type Rectangle = {
     angle: number,
     fill: string,
     stroke: string,
+    direction?: 'left' | 'right';
 
 }
