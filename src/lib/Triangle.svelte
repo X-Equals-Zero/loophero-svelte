@@ -44,7 +44,7 @@
     });
 
 
-    const num = 35;
+    const num = 1;
     let rects: Rectangle[] = [];
     let rects2: Rectangle[] = [];
     const ManyRectangles = (ctx: CanvasRenderingContext2D, rectsArray: Rectangle[]) => {
@@ -157,7 +157,7 @@
         ctx.shadowOffsetX = 20;
         ctx.shadowOffsetY = 10;
         ctx.fill();
-        ctx.shadowColor = null as unknown as string;
+        ctx.shadowColor = `rgba(0, 0, 0, 0)`;
         ctx.stroke();
         ctx.lineWidth = 2;
         ctx.strokeStyle = 'black';

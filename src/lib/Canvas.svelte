@@ -6,7 +6,7 @@
     let fnsToDraw = [] as DrawFn[];
     let frameId: number;
     const clearFrames: boolean = false;
-    
+    let syncWorker: Worker | undefined = undefined;
     setContext("canvas", {
         addDrawFn: (fn: DrawFn) => {
             fnsToDraw.push(fn);
@@ -21,9 +21,16 @@
 
 
     });
+    const loadWorker = async () => {
+        const SyncWorker = await import("$lib/canvas.worker?worker");
+        syncWorker = new SyncWorker.default();
+
+        syncWorker?.postMessage({});
+    };
 
     onMount(() => {
         console.log("Canvas: mounted");
+        loadWorker();
         // get canvas context
         let ctx = canvasElement.getContext("2d");
         canvasElement.width = document.documentElement.clientWidth;
