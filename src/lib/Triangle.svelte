@@ -6,6 +6,7 @@
     const rectAngle = -1;
     const speed: number = 2;
     let canvasX: number, canvasY: number;
+    let scrollY = 0;
     const bgColor = `rgba(${55}, ${Math.random() * 155}, ${125}, 1)`;
     onMount(() => {
         canvasX = document.documentElement.clientWidth;
@@ -22,6 +23,7 @@
                 fill: `rgba(${55}, ${Math.random() * 155}, ${125}, 1)`, 
                 stroke: `rgba(${125}, ${Math.random() * 155}, ${125}, 1)`,
                 direction: 'right',
+                blend: Math.random() < 0.5 ? 'source-over' : 'overlay',
 
             });
             rects2.push({
@@ -33,6 +35,7 @@
                 fill: `rgba(${55}, ${Math.random() * 155}, ${125}, 1)`, 
                 stroke: `rgba(${125}, ${Math.random() * 155}, ${125}, 1)`,
                 direction: 'left',
+                blend: Math.random() < 0.5 ? 'source-over' : 'overlay',
 
             });
         }
@@ -44,12 +47,12 @@
     });
 
 
-    const num = 1;
+    const num = 20;
     let rects: Rectangle[] = [];
     let rects2: Rectangle[] = [];
     const ManyRectangles = (ctx: CanvasRenderingContext2D, rectsArray: Rectangle[]) => {
         rectsArray.forEach((rect) => {
-            const {x, y, width, height, angle, fill, stroke, direction='left'} = rect;
+            const {x, y, width, height, angle, fill, stroke, direction='left', blend} = rect;
             if( x > canvasX + width) {
                 rect.x = 0 - width + 1;
             }
@@ -62,10 +65,11 @@
             if(y < 0 - height) {
                 rect.y = canvasY + height - 1;
             }
-            Rectangle({x, y, width, height, angle: angle, fill, stroke, direction}, ctx);
+            Rectangle({x, y, width, height, angle: angle, fill, stroke, direction, blend}, ctx);
             
-            rect.y +=  Math.cos(angle) * speed * width/200 * (direction === 'left' ? -1 : 1) ;
-            rect.x +=  Math.sin(angle) * speed* width/200 * (direction === 'left' ? -1 : 1);
+            rect.y +=  Math.cos(angle) * speed *  scrollY/100 * width/200 * (direction === 'left' ? -1 : 1) ;
+            rect.x +=  Math.sin(angle) * speed *  scrollY/100 * width/200 * (direction === 'left' ? -1 : 1);
+
         });
         
     }
@@ -118,24 +122,29 @@
     }
 
     // draw a skewed rectangle
-    const Rectangle = ({x, y, width, height, angle=-1, fill, stroke}: Rectangle, ctx: CanvasRenderingContext2D) => {
+    const Rectangle = ({x, y, width, height, angle=-1, fill, stroke, blend}: Rectangle, ctx: CanvasRenderingContext2D) => {
         let w, h, rx, ry;
         w = width;
         h = height;
         rx = Math.sin(angle) * w;
         ry = Math.cos(angle) * w;
         let shadowColor;
-        
+
         ctx.save();
+        ctx.strokeStyle=stroke;
+        ctx.fillStyle=fill;
         
-        // first translate to center
+        ctx.lineWidth = 10;
         ctx.translate(x, y);
+
+        ctx.globalCompositeOperation = blend;
+        ctx.save();
         // then translate to the top left corner of the rectangle
         ctx.translate(rx * -.5, (ry + h) * -.5);
-        ctx.globalCompositeOperation = 'overlay';
-        ctx.fillStyle=fill;
-        ctx.strokeStyle=stroke;
-
+        
+        
+        
+        
         ctx.beginPath();
         // top-left corner is [0, 0]
         ctx.moveTo(0, 0);
@@ -144,21 +153,20 @@
         ctx.lineTo(0, h);
 
         ctx.closePath();
-        ctx.lineWidth = 10;
-        
-        //set shadowColor to HSLA with random hue, 50% saturation, 50% lightness, and 0.5 alpha
-        
-        // insert #00000 for shadowColor
-
-
-        shadowColor = hexToRgba(luminance(fill, 0.6), 0.8);
+        ctx.restore();
+        ctx.stroke();
+        //shadowColor = hexToRgba(luminance(fill, 0.6), 0.8);
+        shadowColor = fill;
+        shadowColor = shadowColor.substring(0, shadowColor.length - 2).concat('0.8)');
         ctx.shadowColor = shadowColor;
         
         ctx.shadowOffsetX = 20;
         ctx.shadowOffsetY = 10;
+        ctx.stroke();
         ctx.fill();
         ctx.shadowColor = `rgba(0, 0, 0, 0)`;
         ctx.stroke();
+        ctx.globalCompositeOperation = 'source-over';
         ctx.lineWidth = 2;
         ctx.strokeStyle = 'black';
         ctx.stroke();
@@ -211,9 +219,10 @@
         ctx.fillStyle = bgColor;
         ctx.fillRect(0, 0, canvasX, canvasY);
         ctx.restore();
+        drawPolygon(ctx, canvasX/2, canvasY/2, 800, 4, 0, false);
         
         ManyRectangles(ctx, rects);
-        drawPolygon(ctx, canvasX/2, canvasY/2, 300, 4, 0, false);
+        
         //Triangle(canvasX/2, canvasY/2, ctx, size);
         ManyRectangles(ctx, rects2);
         
@@ -221,3 +230,4 @@
         
     }
 </script>
+<svelte:window on:wheel={(e)=> scrollY += e.deltaY} />
